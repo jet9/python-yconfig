@@ -54,7 +54,7 @@ from ndict import NDict
 # LOG.basicConfig(format='%(levelname)s: %(message)s', level=LOG.ERROR)
 # TODO: remove debugging code
 
-__version__ = "0.1"
+__version__ = "0.2"
 _var_pattern = re.compile(r"\$\$\{([a-zA-Z0-9_\.]+)\}")
 _expr_pattern = re.compile(r"\$#\{(.+)\}")
 _python_var_pattern = re.compile(r"{([a-zA-Z0-9_]+)}")
