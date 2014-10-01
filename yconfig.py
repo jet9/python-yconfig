@@ -158,11 +158,15 @@ def _process_root_keys(conf):
     return conf
 
 
-def _eval_python_str(value):
+def _eval_python_str(value, _globals=None):
     """Evaluate python source str"""
 
+    if _globals is None:
+        _globals = {}
+
+    _globals.update(globals())
     for subs in _expr_pattern.findall(value):
-        eval_expr = eval(subs)
+        eval_expr = eval(subs, _globals)
         # LOG.info("evaluate python: {0} -> {1}".format(subs, eval_expr))
         # LOG.info("value: {0}".format(value))
         # LOG.info("replace: {0} -> {1}".format("$#{"+subs+"}", eval_expr))
@@ -172,38 +176,38 @@ def _eval_python_str(value):
     return value
 
 
-def _eval_conf_str(tree, value):
+def _eval_conf_str(tree, value, _globals=None):
     """Evaluate internal config variable"""
 
     # LOG.info("evaluate internal conf str: {0}".format(value))
     for subs in _var_pattern.findall(value):
         eval_var = eval("tree." + subs)
         if isinstance(eval_var, str) and eval_var.find("$#") != -1:
-            eval_var = _eval_python_str(eval_var)
+            eval_var = _eval_python_str(eval_var, _globals=_globals)
         # LOG.info("replace: {0} -> {1}".format(subs, eval_var))
         value = value.replace("$${" + subs + "}", str(eval_var))
 
     return value
 
 
-def _evaluate_obj(tree, item):
+def _evaluate_obj(tree, item, _globals=None):
     """bypass config tree and apply templater to key/values"""
 
     if isinstance(item, dict):
         for k in item.keys():
-            item[k] = _evaluate_obj(tree, item[k])
+            item[k] = _evaluate_obj(tree, item[k], _globals=_globals)
 
     elif isinstance(item, list):
         for k in item:
-            item[item.index(k)] = _evaluate_obj(tree, k)
+            item[item.index(k)] = _evaluate_obj(tree, k, _globals=_globals)
 
     elif isinstance(item, str):
         if item.find("$$") != -1:
             # LOG.debug("find subs '$$' in '{0}'".format(item))
-            item = _eval_conf_str(tree, item)
+            item = _eval_conf_str(tree, item, _globals=_globals)
 
         if item.startswith("$#"):
-            return _eval_python_str(item)
+            return _eval_python_str(item, _globals=_globals)
 
     else:
         # LOG.warn("Unknown obj instance: {0}".format(type(item)))
@@ -212,20 +216,20 @@ def _evaluate_obj(tree, item):
     return item
 
 
-def _process_config(conf):
+def _process_config(conf, _globals=None):
     """process config template"""
 
     conf = _process_root_keys(conf)
 
-    return _evaluate_obj(conf, conf)
+    return _evaluate_obj(conf, conf, _globals=_globals)
 
 
-def get_config(fname):
+def get_config(fname, _globals=None):
     """Get config from filename"""
 
     conf = _load_config(fname)
 
-    return _process_config(conf)
+    return _process_config(conf, _globals=_globals)
 
 
 if __name__ == "__main__":

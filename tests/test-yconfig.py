@@ -11,7 +11,7 @@ CONF_DIR = "/tmp"
 PREFIX = "asjflsdjasdlfvdnhq"
 BASE_TEMPLATE_PATH = CONF_DIR + "/" + PREFIX + "_base.conf"
 TEMPLATE_01_PATH = CONF_DIR + "/" + PREFIX + "_template01.conf"
-
+TEMPLATE_02_PATH = CONF_DIR + "/" + PREFIX + "_template02.conf"
 
 DICT_FOR_FORMAT = {
     "1": {
@@ -53,8 +53,6 @@ DICT2 = {
     "five": "XXX5"
 }
 
-
-
 CONF_TEMPLATE_BASE = """
 uid: $#{os.getuid()}
 """
@@ -78,6 +76,27 @@ fruits:
         equador: "$${colors.yellow.dark}"
         columbia: $#{"red".upper()}
     uid: "process id: $${uid}"
+"""
+
+CONF_TEMPLATE_02 = """
+$$import:
+    - os
+
+$$extends: "/tmp/asjflsdjasdlfvdnhq_base.conf"
+
+colors:
+    brown: "BROWN"
+    yellow:
+        light: "yellow"
+        dark: "YELLOW"
+
+
+fruits:
+    apple: [ "red", "green", "$${colors.brown}", "yellow" ]
+    banana:
+        equador: "$${colors.yellow.dark}"
+        columbia: $#{"red".upper()}
+    uid: "process id: $#{uid}"
 """
 
 
@@ -113,6 +132,7 @@ class YconfigTest(unittest.TestCase):
         self.do_teardown = True
         write_file(BASE_TEMPLATE_PATH, CONF_TEMPLATE_BASE)
         write_file(TEMPLATE_01_PATH, CONF_TEMPLATE_01)
+        write_file(TEMPLATE_02_PATH, CONF_TEMPLATE_01)
 
     def tearDown(self):
         """Cleanup tests"""
@@ -133,7 +153,6 @@ class YconfigTest(unittest.TestCase):
     def test_010_get_config(self):
         """010 Test config file reading"""
 
-
         conf = get_config(TEMPLATE_01_PATH)
 
         uid = os.getuid()
@@ -144,6 +163,16 @@ class YconfigTest(unittest.TestCase):
         self.assertEqual(conf.fruits.uid, "process id: {0}".format(uid))
         self.assertEqual(conf.fruits.banana.equador, "YELLOW")
         self.assertEqual(conf.fruits.apple[2], "BROWN")
+
+    def test_015_get_config_with_globals(self):
+        """015 Test config file reading with _globals"""
+
+        uid = os.getuid()
+        conf = get_config(TEMPLATE_02_PATH, _globals={"uid":uid})
+
+        self.assertTrue("uid" in conf.keys())
+
+        self.assertEqual(uid, int(conf.uid))
 
     def test_020_dict_format(self):
         """020 Test dict_formatting"""
