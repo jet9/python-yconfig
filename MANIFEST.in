@@ -1,0 +1,3 @@
+include Makefile
+include python-yconfig.spec
+include README.md
