@@ -3,7 +3,7 @@
 %define _project yconfig
 
 Name:    python-%{_project}
-Version: 0.2
+Version: 0.2.1
 Release: 1%{?dist}
 Summary: Yet Another YAML configuration files manager for python
 
@@ -46,5 +46,8 @@ Yet Another YAML configuration files manager for python
 
 
 %changelog
+* Sat Sep 12 2015 Dmitry Kurbatov <dk@dimcha.ru> - 0.2.1
+- fix: inner variables evaluating
+
 * Wed Oct 08 2014 Dmitry Kurbatov <dk@dimcha.ru> - 0.2
 - create custom spec file
