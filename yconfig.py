@@ -186,6 +186,8 @@ def _eval_conf_str(tree, value, _globals=None):
             eval_var = _eval_python_str(eval_var, _globals=_globals)
         # LOG.info("replace: {0} -> {1}".format(subs, eval_var))
         value = value.replace("$${" + subs + "}", str(eval_var))
+        # LOG.info("result: {0}".format(value))
+        value = _evaluate_obj(tree, value, _globals=_globals)
 
     return value
 
@@ -203,7 +205,7 @@ def _evaluate_obj(tree, item, _globals=None):
 
     elif isinstance(item, str):
         if item.find("$$") != -1:
-            # LOG.debug("find subs '$$' in '{0}'".format(item))
+            # LOG.info("find subs '$$' in '{0}'".format(item))
             item = _eval_conf_str(tree, item, _globals=_globals)
 
         if item.startswith("$#"):

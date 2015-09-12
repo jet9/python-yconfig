@@ -5,6 +5,7 @@ import os
 import unittest
 import sys
 
+
 from yconfig import get_config, dict_format, dict_merge
 
 CONF_DIR = "/tmp"
@@ -12,6 +13,7 @@ PREFIX = "asjflsdjasdlfvdnhq"
 BASE_TEMPLATE_PATH = CONF_DIR + "/" + PREFIX + "_base.conf"
 TEMPLATE_01_PATH = CONF_DIR + "/" + PREFIX + "_template01.conf"
 TEMPLATE_02_PATH = CONF_DIR + "/" + PREFIX + "_template02.conf"
+TEMPLATE_03_PATH = CONF_DIR + "/" + PREFIX + "_template03.conf"
 
 DICT_FOR_FORMAT = {
     "1": {
@@ -100,6 +102,15 @@ fruits:
 """
 
 
+CONF_TEMPLATE_03 = """
+path:
+    site_root: "/var/www/site-backend"
+    template_dir: "$${path.site_root}/data/templates"
+    email_templates_dir: "$${path.template_dir}/email"
+
+test_path: "$${path.template_dir}/email"
+"""
+
 def write_file(fname, data):
     """Create file with data"""
 
@@ -132,7 +143,8 @@ class YconfigTest(unittest.TestCase):
         self.do_teardown = True
         write_file(BASE_TEMPLATE_PATH, CONF_TEMPLATE_BASE)
         write_file(TEMPLATE_01_PATH, CONF_TEMPLATE_01)
-        write_file(TEMPLATE_02_PATH, CONF_TEMPLATE_01)
+        write_file(TEMPLATE_02_PATH, CONF_TEMPLATE_02)
+        write_file(TEMPLATE_03_PATH, CONF_TEMPLATE_03)
 
     def tearDown(self):
         """Cleanup tests"""
@@ -199,6 +211,13 @@ class YconfigTest(unittest.TestCase):
         self.assertEqual(d["four"], "XXX")
         self.assertEqual(d["five"], "XXX5")
 
+    def test_040_eval_conf_variables(self):
+        """040 Test config variables evaluating"""
+
+        conf = get_config(TEMPLATE_03_PATH)
+
+        self.assertEqual(conf.path.site_root + '/data/templates/email', conf.test_path)
+        self.assertEqual(conf.path.site_root + '/data/templates/email', conf.path.email_templates_dir)
 
 if __name__ == "__main__":
     unittest.main()
