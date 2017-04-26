@@ -43,10 +43,9 @@
         value: $${some.value}
         msg: "Some value $${some.value2} inside a string"
 """
-
-import yaml
 import re
-# import logging as LOG
+import six
+import yaml
 
 from copy import deepcopy
 from ndict import NDict
@@ -54,7 +53,7 @@ from ndict import NDict
 # LOG.basicConfig(format='%(levelname)s: %(message)s', level=LOG.ERROR)
 # TODO: remove debugging code
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 _var_pattern = re.compile(r"\$\$\{([a-zA-Z0-9_\.]+)\}")
 _expr_pattern = re.compile(r"\$#\{(.+)\}")
 _python_var_pattern = re.compile(r"{([a-zA-Z0-9_]+)}")
@@ -99,7 +98,7 @@ def dict_merge(a, b):
     if not isinstance(b, dict):
         return b
     result = deepcopy(a)
-    for k, v in b.iteritems():
+    for k, v in six.iteritems(b):
         if k in result and isinstance(result[k], dict):
                 result[k] = dict_merge(result[k], v)
         else:
